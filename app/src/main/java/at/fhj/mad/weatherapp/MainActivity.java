@@ -1,7 +1,11 @@
 package at.fhj.mad.weatherapp;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.SharedPreferences;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -31,15 +35,15 @@ import java.net.URL;
 
 /**
  * Main Screen:
- *
+ * <p/>
  * simple UI, Request the weather of a city
- *
+ * <p/>
  * * @author EKrainz
  */
 public class MainActivity extends Activity {
 
-    final private String WEATHERAPP="Settings";
-    final private String HOME="hometown";
+    final private String WEATHERAPP = "Settings";
+    final private String HOME = "hometown";
 
     private TextView output;
     private EditText inputCity;
@@ -59,12 +63,13 @@ public class MainActivity extends Activity {
 
 
         //load the last city form your shared preferenes (xml file in App)
-        prefs = getSharedPreferences(WEATHERAPP,0);
+        prefs = getSharedPreferences(WEATHERAPP, 0);
         inputCity.setText(prefs.getString(HOME, "graz"));
     }
 
     /**
      * this method is called wenn clickeing the getwether button (see xml layout)
+     *
      * @param v view is the calling UI component
      */
     public void getWeather(View v) {
@@ -73,6 +78,9 @@ public class MainActivity extends Activity {
 
         String sUrl = "    http://api.openweathermap.org/data/2.5/weather?q=";
         sUrl = sUrl + inputCity.getText().toString();
+
+        // add API Key
+        sUrl = sUrl + "&appid=1c108b58fb003a8e3c60132638252ad5";
 
         // for Testing: show url for testing in the output textview
         //output.setText(url);
@@ -92,6 +100,58 @@ public class MainActivity extends Activity {
     }
 
 
+    public void getPosition(View v) {
+
+        //get Location Manager
+        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+
+        // add location listener
+
+        LocationListener locList = new LocList();
+        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 500, 1, locList);
+
+        // remove location listern  but NOT too eary
+        //locationManager.removeUpdates(locList);
+
+        //DONT forget the PERMISSION!!!!!
+    }
+
+
+    // Location Listener with Nested class
+
+    /**
+     *  inner class for location listening
+     */
+    private class LocList implements LocationListener {
+
+        @Override
+        public void onLocationChanged(Location location) {
+
+            Log.i("LOCATION", location.getLatitude() + "," + location.getLongitude());
+
+            EditText position = (EditText)findViewById(R.id.txtposition);
+
+            position.setText(location.getLatitude() +", " + location.getLongitude() );
+
+        }
+
+
+        @Override
+        public void onProviderDisabled(String provider) {
+        }
+
+        @Override
+        public void onProviderEnabled(String provider) {
+        }
+
+        @Override
+        public void onStatusChanged(String provider, int status, Bundle extras) {
+        }
+
+        ;
+    }
+
+
     // http with nested class
 
     // asyncTask has 3 generic parameter
@@ -101,17 +161,16 @@ public class MainActivity extends Activity {
 
     /**
      * Perform internet operation in asyn Task
-     *
+     * <p/>
      * HttpHelper as nested class, parent class Async Task
      * http://developer.android.com/reference/android/os/AsyncTask.html
-     *
+     * <p/>
      * AsyncTask has 3 generic parameter
      * 1. the type of the execute method == input of do-in-Backgroudn
      * 2. type of the progressindicator
      * 3. the return value of the do-in-background = input parameter of onpostexecute
      *
      * @author EKrainz
-     *
      */
     private class HttpHelper extends AsyncTask<String, Void, String> {
 
@@ -153,23 +212,22 @@ public class MainActivity extends Activity {
             // handle the result of the do-in-background-method
 
             //For Testing: update the UI with json String
-           // MainActivity.this.output.setText(s);
+            // MainActivity.this.output.setText(s);
 
             // e.g. parse Json  & update UI
             //
             try {
-                JSONObject jsonObject  = new JSONObject(s);
-                JSONArray ja =jsonObject.getJSONArray("weather");
+                JSONObject jsonObject = new JSONObject(s);
+                JSONArray ja = jsonObject.getJSONArray("weather");
 
-                String weatherStr =ja.getJSONObject(0).getString("main") + ", "+ ja.getJSONObject(0).getString("description");
+                String weatherStr = ja.getJSONObject(0).getString("main") + ", " + ja.getJSONObject(0).getString("description");
                 MainActivity.this.output.setText(weatherStr);
 
                 // todo update weather infos:-)
 
-            } catch (JSONException e){
-               e.printStackTrace();
+            } catch (JSONException e) {
+                e.printStackTrace();
             }
-
 
 
         }
