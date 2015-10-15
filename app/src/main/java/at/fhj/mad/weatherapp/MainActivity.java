@@ -51,6 +51,10 @@ public class MainActivity extends Activity {
     // to save the city
     private SharedPreferences prefs;
 
+    //location
+    private LocationManager locationManager;
+    private LocationListener locList;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,6 +71,17 @@ public class MainActivity extends Activity {
         inputCity.setText(prefs.getString(HOME, "graz"));
     }
 
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        //maybe we should not ask for GPS any more
+
+        locationManager.removeUpdates(locList);
+
+    }
+
     /**
      * this method is called wenn clickeing the getwether button (see xml layout)
      *
@@ -74,10 +89,20 @@ public class MainActivity extends Activity {
      */
     public void getWeather(View v) {
 
-        // create a Query string e.g.         http://api.openweathermap.org/data/2.5/weather?q=kapfenberg
+        // create a Query string e.g.
+
+        // by city
+        // http://api.openweathermap.org/data/2.5/weather?q=kapfenberg
 
         String sUrl = "    http://api.openweathermap.org/data/2.5/weather?q=";
         sUrl = sUrl + inputCity.getText().toString();
+
+
+
+        // by lat/long
+        // api.openweathermap.org/data/2.5/weather?lat=35&lon=139
+
+
 
         // add API Key
         sUrl = sUrl + "&appid=1c108b58fb003a8e3c60132638252ad5";
@@ -87,7 +112,6 @@ public class MainActivity extends Activity {
 
 
         // create obj of Httphelper -> is asnc task
-
         HttpHelper helper = new HttpHelper();
         helper.execute(sUrl);  // the url is sent to the do-in-background method  use params[0]
 
@@ -103,14 +127,14 @@ public class MainActivity extends Activity {
     public void getPosition(View v) {
 
         //get Location Manager
-        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
         // add location listener
 
-        LocationListener locList = new LocList();
+         locList = new LocList();
         locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 500, 1, locList);
 
-        // remove location listern  but NOT too eary
+        // remove location listern  but NOT too early
         //locationManager.removeUpdates(locList);
 
         //DONT forget the PERMISSION!!!!!
@@ -120,7 +144,7 @@ public class MainActivity extends Activity {
     // Location Listener with Nested class
 
     /**
-     *  inner class for location listening
+     * inner class for location listening
      */
     private class LocList implements LocationListener {
 
@@ -129,9 +153,9 @@ public class MainActivity extends Activity {
 
             Log.i("LOCATION", location.getLatitude() + "," + location.getLongitude());
 
-            EditText position = (EditText)findViewById(R.id.txtposition);
+            EditText position = (EditText) findViewById(R.id.txtposition);
 
-            position.setText(location.getLatitude() +", " + location.getLongitude() );
+            position.setText(location.getLatitude() + ", " + location.getLongitude());
 
         }
 
@@ -221,6 +245,8 @@ public class MainActivity extends Activity {
                 JSONArray ja = jsonObject.getJSONArray("weather");
 
                 String weatherStr = ja.getJSONObject(0).getString("main") + ", " + ja.getJSONObject(0).getString("description");
+
+               // update UI
                 MainActivity.this.output.setText(weatherStr);
 
                 // todo update weather infos:-)
