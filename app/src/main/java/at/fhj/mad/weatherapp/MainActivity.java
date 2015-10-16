@@ -16,6 +16,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -27,6 +28,8 @@ import org.json.JSONObject;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -40,10 +43,16 @@ import java.net.URL;
  * <p/>
  * * @author EKrainz
  */
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements ICallback {
 
     final private String WEATHERAPP = "Settings";
     final private String HOME = "hometown";
+
+    final private String API_URL = "http://api.openweathermap.org/data/2.5/weather?";
+    final private String API_KEY = "&appid=1c108b58fb003a8e3c60132638252ad5";
+
+    final private String FILENAME = "lastresult.json";
+
 
     private TextView output;
     private EditText inputCity;
@@ -54,7 +63,6 @@ public class MainActivity extends Activity {
     //location
     private LocationManager locationManager;
     private LocationListener locList;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,6 +77,30 @@ public class MainActivity extends Activity {
         //load the last city form your shared preferenes (xml file in App)
         prefs = getSharedPreferences(WEATHERAPP, 0);
         inputCity.setText(prefs.getString(HOME, "graz"));
+
+
+        // load last JSON response from File
+        try {
+            FileInputStream fis = openFileInput(FILENAME);
+            InputStreamReader isr = new InputStreamReader(fis);
+            BufferedReader br = new BufferedReader(isr);
+            StringBuffer sb = new StringBuffer();
+            String line;
+            while ((line = br.readLine()) != null) {
+                sb.append(line);
+            }
+            br.close();
+            isr.close();
+            fis.close();
+
+            // output Json in Toast
+            Toast.makeText(this, sb.toString(), Toast.LENGTH_LONG).show();
+            // TODO show last resulet in Textview
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+        }
     }
 
 
@@ -77,9 +109,9 @@ public class MainActivity extends Activity {
         super.onPause();
 
         //maybe we should not ask for GPS any more
-
-        locationManager.removeUpdates(locList);
-
+        if (locationManager != null) {
+            locationManager.removeUpdates(locList);
+        }
     }
 
     /**
@@ -94,18 +126,15 @@ public class MainActivity extends Activity {
         // by city
         // http://api.openweathermap.org/data/2.5/weather?q=kapfenberg
 
-        String sUrl = "    http://api.openweathermap.org/data/2.5/weather?q=";
-        sUrl = sUrl + inputCity.getText().toString();
-
+        String sUrl = API_URL + "q=" + inputCity.getText().toString();
 
 
         // by lat/long
         // api.openweathermap.org/data/2.5/weather?lat=35&lon=139
 
 
-
         // add API Key
-        sUrl = sUrl + "&appid=1c108b58fb003a8e3c60132638252ad5";
+        sUrl = sUrl + API_KEY;
 
         // for Testing: show url for testing in the output textview
         //output.setText(url);
@@ -113,6 +142,11 @@ public class MainActivity extends Activity {
 
         // create obj of Httphelper -> is asnc task
         HttpHelper helper = new HttpHelper();
+
+        // set the callback
+        helper.setCallback(this);
+
+
         helper.execute(sUrl);  // the url is sent to the do-in-background method  use params[0]
 
 
@@ -120,6 +154,7 @@ public class MainActivity extends Activity {
         SharedPreferences.Editor edit = prefs.edit();  //editor to update the values
         edit.putString(HOME, inputCity.getText().toString());
         edit.commit();
+
 
     }
 
@@ -131,7 +166,7 @@ public class MainActivity extends Activity {
 
         // add location listener
 
-         locList = new LocList();
+        locList = new LocList();
         locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 500, 1, locList);
 
         // remove location listern  but NOT too early
@@ -176,88 +211,24 @@ public class MainActivity extends Activity {
     }
 
 
-    // http with nested class
 
-    // asyncTask has 3 generic parameter
-    // 1. the type of the execute method == input of do-in-Backgroudn
-    // 2. the return value of the do-in-background = input parameter of onpostexecute
-    // 3. type of the progressindicator
 
-    /**
-     * Perform internet operation in asyn Task
-     * <p/>
-     * HttpHelper as nested class, parent class Async Task
-     * http://developer.android.com/reference/android/os/AsyncTask.html
-     * <p/>
-     * AsyncTask has 3 generic parameter
-     * 1. the type of the execute method == input of do-in-Backgroudn
-     * 2. type of the progressindicator
-     * 3. the return value of the do-in-background = input parameter of onpostexecute
-     *
-     * @author EKrainz
-     */
-    private class HttpHelper extends AsyncTask<String, Void, String> {
 
-        @Override
-        protected String doInBackground(String... params) {
+    @Override
+    public void handleJSonString(String jsonString) {
 
-            // create Http Client & Co
+        // e.g. parse Json  & update UI
+        //
+        try {
+            JSONObject jsonObject = new JSONObject(jsonString);
+            JSONArray ja = jsonObject.getJSONArray("weather");
+            String weatherStr = ja.getJSONObject(0).getString("main") + ", " + ja.getJSONObject(0).getString("description");
+            this.output.setText(weatherStr);
 
-            StringBuilder out = new StringBuilder();
-            try {
-                //for Testing: Hardcoded URL url = new URL("http://api.openweathermap.org/data/2.5/weather?q=kapfenberg");
-
-                // get the string parameter from execute()
-                URL url = new URL(params[0]);
-
-                // creat Urlconnection
-                HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-                InputStream in = new BufferedInputStream(urlConnection.getInputStream());
-
-                // read inputstrem
-                BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    out.append(line);
-                }
-                Log.i("INTERNET", out.toString());
-
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-            return out.toString(); // return of do in background method is input paramet od onpostexecude method
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
 
-        @Override
-        protected void onPostExecute(String s) {
-            super.onPostExecute(s);
 
-            // handle the result of the do-in-background-method
-
-            //For Testing: update the UI with json String
-            // MainActivity.this.output.setText(s);
-
-            // e.g. parse Json  & update UI
-            //
-            try {
-                JSONObject jsonObject = new JSONObject(s);
-                JSONArray ja = jsonObject.getJSONArray("weather");
-
-                String weatherStr = ja.getJSONObject(0).getString("main") + ", " + ja.getJSONObject(0).getString("description");
-
-               // update UI
-                MainActivity.this.output.setText(weatherStr);
-
-                // todo update weather infos:-)
-
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-
-
-        }
     }
-
-
 }
