@@ -26,7 +26,25 @@
         android:layout_below="@+id/imageView"
         android:layout_centerHorizontal="true" />
 
+    <Button
+        android:id="@+id/buttonService"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Start Service"
 
+        android:layout_below="@+id/buttonFoo"
+        android:layout_centerHorizontal="true"
 
+        android:onClick="startService"/>
 
+    <Button
+        android:id="@+id/buttonServicestop"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="stop Service"
+
+        android:layout_below="@+id/buttonService"
+        android:layout_centerHorizontal="true"
+
+        android:onClick="stopService"/>
 </RelativeLayout>

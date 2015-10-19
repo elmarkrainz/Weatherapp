@@ -26,6 +26,33 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <service android:name=".WeatherService"></service>
+
+
+
+        <service android:name=".MyService">
+
+        </service>
+
+
+
+
+
+
+
+
+
+
+
+
+        <receiver android:name=".WeatherGPSBroadcastReceiver">
+            <intent-filter>
+                <action android:name="android.location.PROVIDERS_CHANGED" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </receiver>
+
     </application>
 
 </manifest>

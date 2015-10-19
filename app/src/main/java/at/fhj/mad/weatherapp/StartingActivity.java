@@ -10,6 +10,7 @@ import android.widget.Button;
 
 /**
  * Starting activity - Splash screen with image an button
+ *
  * @author EKrainz
  */
 public class StartingActivity extends Activity {
@@ -26,7 +27,6 @@ public class StartingActivity extends Activity {
         btn = (Button) findViewById(R.id.buttonFoo);
 
 
-
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -41,10 +41,8 @@ public class StartingActivity extends Activity {
     }
 
 
-
-
     // open 2nd activity
-    public void openActivity(View v){
+    public void openActivity(View v) {
 
         // create intent
 
@@ -53,6 +51,24 @@ public class StartingActivity extends Activity {
         // start activity with intent
         startActivity(i);
 
+
+    }
+
+    public void startService(View v) {
+
+            // Start the service
+            Intent i = new Intent(this, MyService.class);
+
+            startService(i);
+
+    }
+
+    public void stopService(View v) {
+
+        // stop the service
+        Intent i = new Intent(this, MyService.class);
+
+        stopService(i);
 
     }
 
