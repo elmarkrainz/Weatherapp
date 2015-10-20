@@ -36,7 +36,7 @@
         android:layout_centerHorizontal="true"
 
         android:onClick="startService"/>
-
+<!--
     <Button
         android:id="@+id/buttonServicestop"
         android:layout_width="wrap_content"
@@ -47,4 +47,5 @@
         android:layout_centerHorizontal="true"
 
         android:onClick="stopService"/>
+        -->
 </RelativeLayout>

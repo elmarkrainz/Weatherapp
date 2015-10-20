@@ -18,10 +18,10 @@ import java.net.URL;
 
 /**
  * Perform internet operation in asyn Task
- * <p/>
- * HttpHelper as nested class, parent class Async Task
+ *
+ * parent class Async Task
  * http://developer.android.com/reference/android/os/AsyncTask.html
- * <p/>
+ *
  * AsyncTask has 3 generic parameter
  * 1. the type of the execute method == input of do-in-Backgroudn
  * 2. type of the progressindicator
@@ -47,9 +47,6 @@ public class HttpHelper extends AsyncTask<String, Void, String> {
 
 
 
-
-
-
     @Override
     protected String doInBackground(String... params) {
 
@@ -57,6 +54,7 @@ public class HttpHelper extends AsyncTask<String, Void, String> {
 
         StringBuilder out = new StringBuilder();
         try {
+
             //for Testing: Hardcoded URL url = new URL("http://api.openweathermap.org/data/2.5/weather?q=kapfenberg");
 
             // get the string parameter from execute()
@@ -78,66 +76,17 @@ public class HttpHelper extends AsyncTask<String, Void, String> {
             e.printStackTrace();
         }
 
-        return out.toString(); // return of do in background method is input paramet od onpostexecude method
+        return out.toString(); // return of do in background method is input parameter to the  on-post-execude method
     }
 
     @Override
     protected void onPostExecute(String s) {
         super.onPostExecute(s);
 
+        // do something with results from do-in-background method
 
+        // use a Callback-method to react !!
         callback.handleJSonString(s);
-
-
-
-
-
-        // handle the result of the do-in-background-method
-
-        //For Testing: update the UI with json String
-        // MainActivity.this.output.setText(s);
-
-        // e.g. parse Json  & update UI
-        //
-      /*   try {
-            JSONObject jsonObject = new JSONObject(s);
-
-
-
-            JSONArray ja = jsonObject.getJSONArray("weather");
-
-            String weatherStr = ja.getJSONObject(0).getString("main") + ", " + ja.getJSONObject(0).getString("description");
-
-
-
-
-
-
-
-            // update UI
-           // PROBLEM: MainActivity.this.output.setText(weatherStr);
-
-            // todo update weather infos:-)
-
-
-
-            //---Store JSON result in a File
-           FileOutputStream fos = null;
-
-            try {
-                fos = openFileOutput(FILENAME, Context.MODE_PRIVATE);
-                fos.write(s.getBytes());
-                fos.close();
-            }
-            catch (Exception e){
-                e.printStackTrace();
-            }
-
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-*/
 
     }
 }

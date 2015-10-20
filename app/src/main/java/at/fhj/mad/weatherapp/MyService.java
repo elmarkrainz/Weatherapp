@@ -6,12 +6,13 @@ import android.os.IBinder;
 import android.util.Log;
 
 /**
- * Created by krajn on 19/10/15.
+ * Super simple Service Runs
+ *
  */
 public class MyService extends Service {
 
 
-    private boolean isrunning;
+    private int counter;
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -22,33 +23,39 @@ public class MyService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        // Service Starts
-        isrunning = true;
 
         Thread t = new Thread(new  Runnable(){
             @Override
             public void run() {
-                while (isrunning) {
+                while (counter<1000) {
                     Log.i("SERVICE", "service started");
 
                     // do some stuff
+
+
+
+                    // increment counter
+                    counter ++;
+
+                    // stop Service
+                    if (counter==999){
+                        MyService.this.stopSelf();
+                    }
 
                 }
             }
         });
         t.start();
 
-        //stop itself
 
-        // stopSelf();
+
+
     }
 
 
     @Override
     public void onDestroy() {
-        isrunning=false;
         super.onDestroy();
-
 
         // Service stops
         Log.i("SERVICE", "service stopped");

@@ -56,10 +56,13 @@ public class StartingActivity extends Activity {
 
     public void startService(View v) {
 
-            // Start the service
-            Intent i = new Intent(this, MyService.class);
+        // Start the service
+        //  --  test service
+        //Intent i = new Intent(this, MyService.class);
 
-            startService(i);
+
+        Intent i = new Intent(this, WeatherService.class);
+        startService(i);
 
     }
 
@@ -67,11 +70,9 @@ public class StartingActivity extends Activity {
 
         // stop the service
         Intent i = new Intent(this, MyService.class);
-
         stopService(i);
 
     }
-
 
 
 }

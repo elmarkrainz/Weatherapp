@@ -2,7 +2,10 @@ package at.fhj.mad.weatherapp;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -30,11 +33,13 @@ import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.List;
 
 /**
  * Main Screen:
@@ -49,6 +54,7 @@ public class MainActivity extends Activity implements ICallback {
     final private String HOME = "hometown";
 
     final private String API_URL = "http://api.openweathermap.org/data/2.5/weather?";
+
     final private String API_KEY = "&appid=1c108b58fb003a8e3c60132638252ad5";
 
     final private String FILENAME = "lastresult.json";
@@ -73,11 +79,18 @@ public class MainActivity extends Activity implements ICallback {
         inputCity = (EditText) findViewById(R.id.txtCity);
         output = (TextView) findViewById(R.id.txtResponse);
 
+    }
+
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        // load Settings and Saved Data
 
         //load the last city form your shared preferenes (xml file in App)
         prefs = getSharedPreferences(WEATHERAPP, 0);
         inputCity.setText(prefs.getString(HOME, "graz"));
-
 
         // load last JSON response from File
         try {
@@ -94,15 +107,16 @@ public class MainActivity extends Activity implements ICallback {
             fis.close();
 
             // output Json in Toast
-            Toast.makeText(this, sb.toString(), Toast.LENGTH_LONG).show();
-            // TODO show last resulet in Textview
+          //  Toast.makeText(this, parseWeather(sb.toString()), Toast.LENGTH_LONG).show();
+            // TODO show last result in Textview
+            this.output.setText(parseWeather(sb.toString()));
 
         } catch (Exception e) {
 
             e.printStackTrace();
         }
-    }
 
+    }
 
     @Override
     protected void onPause() {
@@ -127,7 +141,6 @@ public class MainActivity extends Activity implements ICallback {
         // http://api.openweathermap.org/data/2.5/weather?q=kapfenberg
 
         String sUrl = API_URL + "q=" + inputCity.getText().toString();
-
 
         // by lat/long
         // api.openweathermap.org/data/2.5/weather?lat=35&lon=139
@@ -169,8 +182,7 @@ public class MainActivity extends Activity implements ICallback {
         locList = new LocList();
         locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 500, 1, locList);
 
-        // remove location listern  but NOT too early
-        //locationManager.removeUpdates(locList);
+        // remove location listern  but NOT too early, see onPause()
 
         //DONT forget the PERMISSION!!!!!
     }
@@ -189,6 +201,22 @@ public class MainActivity extends Activity implements ICallback {
             Log.i("LOCATION", location.getLatitude() + "," + location.getLongitude());
 
             EditText position = (EditText) findViewById(R.id.txtposition);
+
+
+            // get Address
+            Geocoder gc = new Geocoder(MainActivity.this);
+            Address address = null;
+            List<Address> addresses = null;
+            try {
+                addresses = gc.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            if (addresses.size() > 0) {
+                address = addresses.get(0);
+            }
+            // works with 4digit zipcode
+            inputCity.setText(address.getAddressLine(1).substring(5));
 
             position.setText(location.getLatitude() + ", " + location.getLongitude());
 
@@ -211,24 +239,74 @@ public class MainActivity extends Activity implements ICallback {
     }
 
 
-
-
-
     @Override
     public void handleJSonString(String jsonString) {
 
         // e.g. parse Json  & update UI
-        //
+
+        //---Store JSON result in a File
+        FileOutputStream fos = null;
+
+        try {
+            fos = openFileOutput(FILENAME, Context.MODE_PRIVATE);
+            fos.write(jsonString.getBytes());
+            fos.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        // Update UI
+        this.output.setText(parseWeather(jsonString));
+
+
+    }
+
+
+    /**
+     * Handles the Json From weather api
+     *
+     * @param jsonString
+     * @return String output from weather
+     */
+    private String parseWeather(String jsonString) {
+        String weatherStr = null;
+
         try {
             JSONObject jsonObject = new JSONObject(jsonString);
             JSONArray ja = jsonObject.getJSONArray("weather");
-            String weatherStr = ja.getJSONObject(0).getString("main") + ", " + ja.getJSONObject(0).getString("description");
-            this.output.setText(weatherStr);
+            weatherStr = ja.getJSONObject(0).getString("main") + ", " + ja.getJSONObject(0).getString("description");
 
         } catch (JSONException e) {
             e.printStackTrace();
         }
 
+        return weatherStr;
+    }
 
+
+    //----- menu
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+        //noinspection SimplifiableIfStatement
+        if (id == R.id.action_settings) {
+
+            startActivity(new Intent(this, SettingsActivity.class));
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 }
