@@ -33,7 +33,6 @@ public class MyService extends Service {
                     // do some stuff
 
 
-
                     // increment counter
                     counter ++;
 

@@ -9,7 +9,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 /**
- * Created by krajn on 19/10/15.
+ * Example of Broadcast receiver
  */
 public class WeatherGPSBroadcastReceiver extends BroadcastReceiver {
     private LocationManager locManager;
@@ -28,9 +28,7 @@ public class WeatherGPSBroadcastReceiver extends BroadcastReceiver {
 
             Toast.makeText(context, "GPS is active ", Toast.LENGTH_LONG).show();
 
-
-
-            // intent start main activit if gps is enbled
+            // intent start main activity if gps is enbled
             Intent i = new Intent(context, MainActivity.class);
             i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);   /// Flag to allow starting activit from the outside
             context.startActivity(i);

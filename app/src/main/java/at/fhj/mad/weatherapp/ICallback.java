@@ -1,7 +1,25 @@
 package at.fhj.mad.weatherapp;
 
 /**
- * Created by krajn on 16/10/15.
+ * Callback for Listening to the asynctask
+ *
+
+ +-----------------------------+
+ |                             | <-----------------+
+ |        ICallback            |                   |
+ |                             |        +----------+---------+
+ +------------+----------------+        |                    |
+              ^                         |   Helper           |
+              | Interface               |                    |
+ |            |                         |                    |
+ +------------+---------------+         +-----------+--------+
+ |           Activity         |                     ^
+ |                            |                     |
+ |                            +---------------------+
+ +----------------------------+
+
+
+
  */
 public interface ICallback {
 

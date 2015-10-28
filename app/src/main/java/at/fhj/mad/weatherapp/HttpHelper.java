@@ -50,7 +50,6 @@ public class HttpHelper extends AsyncTask<String, Void, String> {
     @Override
     protected String doInBackground(String... params) {
 
-        // create Http Client & Co
 
         StringBuilder out = new StringBuilder();
         try {
@@ -60,7 +59,7 @@ public class HttpHelper extends AsyncTask<String, Void, String> {
             // get the string parameter from execute()
             URL url = new URL(params[0]);
 
-            // creat Urlconnection
+            // create Urlconnection
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
             InputStream in = new BufferedInputStream(urlConnection.getInputStream());
 

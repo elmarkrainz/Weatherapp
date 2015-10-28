@@ -42,6 +42,7 @@ public class WeatherService extends Service{
         Log.i("WEATHER SERVICE", "Service created ");
 
 
+        // get Data from user Settings & creat query String
 
         SharedPreferences prefs = getSharedPreferences("Settings", Context.MODE_PRIVATE);
         sUrl = IConstansts.API_URL + "q=" ;
@@ -52,6 +53,9 @@ public class WeatherService extends Service{
 
     }
 
+    /**
+     * this method calls the API in the service
+     */
     private void checkWeather() {
         Log.i("WEATHER SERVICE", "Service do something ");
     //    while (counter<5){
@@ -69,7 +73,7 @@ public class WeatherService extends Service{
                     // call httphelper and stuff
                     HttpHelper helper = new HttpHelper();
 
-                    // set the callback
+                    // set the callback with inner class
                     helper.setCallback(new ICallback() {
                         @Override
                         public void handleJSonString(String jsonString) {
@@ -85,18 +89,12 @@ public class WeatherService extends Service{
                             Toast.makeText(WeatherService.this, "check Weather: " + weatherStr, Toast.LENGTH_LONG)
                                     .show();
 
-
-
-
                         }
                     });
 
 
-                            helper.execute(sUrl);
 
-
-
-
+                    // check the weather 3 times
                     counter++;
 
                     if (counter == 3){
@@ -109,17 +107,12 @@ public class WeatherService extends Service{
                 }
             }.start();
 
-
-
-
-   //     }
-
-
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
+
         Log.i("WEATHER SERVICE", "Service destroyed ");
     }
 }
